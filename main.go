@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/PhuongDo896/rabbitmq-example/rabbitmq"
+	"github.com/PhuongDo896/rabbitmq-example/activemq"
 )
 
 const (
@@ -13,38 +13,29 @@ const (
 )
 
 func main() {
-	connection, err := rabbitmq.OpenConnection()
+	connection, err := activemq.Connect()
 	if err != nil {
 		log.Fatalf("failed connection: %s", err)
 	}
 
 	defer func() {
-		if err := connection.Close(); err != nil {
+		if err := connection.Disconnect(); err != nil {
 			log.Fatalf("failed close connection: %s", err)
 		}
 	}()
 
-	channel, err := rabbitmq.NewChannel(connection).Create()
-	if err != nil {
-		log.Fatalf("failed create channel: %s", err)
-	}
-
-	queue, err := rabbitmq.NewQueue(channel, "message-broker").Create()
-	if err != nil {
-		log.Fatalf("failed queue declare: %s", err)
-	}
-
-	var message = "Random message!"
+	var (
+		message = "Random message to activemq!"
+		queue   = "message-broker"
+	)
 
 	switch os.Args[1] {
 	case PRODUCER:
-		if err := rabbitmq.NewProducer(channel, queue.Name).Publish(message); err != nil {
+		if err := activemq.NewProducer(connection, queue).Publish(message); err != nil {
 			log.Fatalf("failed publish message: %s", err)
 		}
 
 	case CONSUMER:
-		if err := rabbitmq.NewConsumer(channel, queue.Name).Consume(); err != nil {
-			log.Fatalf("failed consume: %s", err)
-		}
+		activemq.NewConsumer(connection, queue).Consume()
 	}
 }

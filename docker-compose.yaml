@@ -1,14 +1,12 @@
 version: "3.3"
 
 services:
-  rabbitmq:
-    container_name: "rabbitmq"
-    image: "rabbitmq:3-management"
-    hostname: "rabbit"
+  activemq:
+    image: vromero/activemq-artemis:latest-alpine
+    container_name: activemq
+    environment:
+      ARTEMIS_USERNAME: guest
+      ARTEMIS_PASSWORD: guest
     ports:
-      - "15672:15672"
-      - "5672:5672"
-    labels:
-      NAME: "rabbitmq"
-    volumes:
-      - ./rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+      - 8161:8161
+      - 61616:61616
